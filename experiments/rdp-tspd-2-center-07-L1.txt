@@ -1,0 +1,10 @@
+[summary]
+instance=tspd-2-center-07  algo=rdp  n=8  L=1  obj=211.207  time_ms=0  status=FEASIBLE
+
+[solution]
+truck_route: 0 3 7 4 2 0
+drone_sorties:
+    launch=0  customer=1  rendezvous=3
+    launch=3  customer=5  rendezvous=4
+    launch=4  customer=6  rendezvous=0
+total_cost: 211.207

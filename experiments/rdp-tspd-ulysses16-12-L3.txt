@@ -1,0 +1,12 @@
+[summary]
+instance=tspd-ulysses16-12  algo=rdp  n=16  L=3  obj=38.1581  time_ms=4468  status=FEASIBLE
+
+[solution]
+truck_route: 0 15 13 12 11 5 6 9 2 1 3 0
+drone_sorties:
+    launch=0  customer=7  rendezvous=15
+    launch=15  customer=14  rendezvous=13
+    launch=13  customer=4  rendezvous=5
+    launch=5  customer=8  rendezvous=9
+    launch=9  customer=10  rendezvous=0
+total_cost: 38.1581

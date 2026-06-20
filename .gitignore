@@ -1,0 +1,31 @@
+# 编译产物
+*.exe
+*.o
+*.out
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE / 系统
+.vscode/
+.idea/
+*.Zone.Identifier
+Desktop.ini
+Thumbs.db
+
+# 大文件 (PPT/视频等)
+*.pptx
+*.mp4
+*.docx
+*.pdf
+*.png
+
+# Windows
+*Identifier
+*Zone.Identifier
+
+# 临时文件
+*.tmp
+*.swp
+*~

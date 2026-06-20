@@ -1,0 +1,12 @@
+[summary]
+instance=tspd-burma14-11  algo=rdp  n=14  L=1  obj=17.4282  time_ms=151  status=FEASIBLE
+
+[solution]
+truck_route: 0 13 11 5 6 12 7 8 10 0
+drone_sorties:
+    launch=0  customer=2  rendezvous=13
+    launch=13  customer=3  rendezvous=5
+    launch=5  customer=4  rendezvous=12
+    launch=12  customer=9  rendezvous=8
+    launch=8  customer=1  rendezvous=0
+total_cost: 17.4282
