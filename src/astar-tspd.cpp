@@ -14,14 +14,20 @@
 //    由 Agatz et al. [1] 已证："MST 启发式构造的 TSP tour 是 TSP-D 的 (2+α)-近似"
 //    故除以 (2 + α) 给出真实剩余代价的下界 → A* 保证找到最优解
 //
+//  L 参数（--L <int>）：
+//    无 --L 或 --L -1 ：无限制 A* (k=∞)，保证 OPTIMAL
+//    --L N (N≥0) ：限制每次 operation 中 truck-only 节点数 ≤ N
+//                  前两遍同 rdp-tspd 做限制，第三遍后继也只枚举 |T|≤N+2
+//                  status 为 FEASIBLE（限制可能排除最优解）
+//
 //  调用：
-//    ./astar-tspd --input <data.txt> --output <result.txt>
+//    ./astar-tspd --input <data.txt> --output <result.txt>              # 无限制
+//    ./astar-tspd --input <data.txt> --output <result.txt> --L 2        # k=2
 // =============================================================================
 #include "header.h"
 #include <queue>
 
 // -------- MST：在子图（按位掩码 node_set 选的节点）上用 Prim 算 MST --------
-//   节点数最多 n ≤ 18 左右，O(k^2) 完全够
 double mst_cost(const Instance& inst, int node_set) {
     int n = inst.n;
     int k = __builtin_popcount(node_set);
@@ -64,10 +70,14 @@ int main(int argc, char** argv) {
     const int N = 1 << n;
     const int depot = 0;
     const int FULL = N - 1;
+    const bool restricted = (args.L >= 0);
+    const int OP_CAP = restricted ? (args.L + 2) : (n + 5);   // 无限制时设很大
 
-    Timer timer;
+    Timer total_timer;
+    Timer pass_timer;
+    long long pass1_ms = 0, pass2_ms = 0, pass3_ms = 0;
 
-    // ============== Pass 1：D_T（与 dp-tspd.cpp 完全一致） ====================
+    // ============== Pass 1：D_T ==============================================
     vector<double> dt(static_cast<size_t>(N) * n * n, INF);
     auto DT = [&](int mask, int v, int w) -> double& {
         return dt[(static_cast<size_t>(mask) * n + v) * n + w];
@@ -78,7 +88,9 @@ int main(int argc, char** argv) {
             DT(mask, v, w) = inst.c(v, w);
     }
     for (int mask = 1; mask < N; ++mask) {
-        if (__builtin_popcount(mask) < 2) continue;
+        int pc = __builtin_popcount(mask);
+        if (pc < 2) continue;
+        if (restricted && pc > args.L + 1) continue;   // 限制 |S| ≤ L+1
         for (int w = 0; w < n; ++w) {
             if (!(mask & (1 << w))) continue;
             int sub = mask ^ (1 << w);
@@ -94,8 +106,10 @@ int main(int argc, char** argv) {
             }
         }
     }
+    pass1_ms = pass_timer.ms();
+    pass_timer = Timer();
 
-    // ============== Pass 2：D_OP（与 dp-tspd.cpp 完全一致） ===================
+    // ============== Pass 2：D_OP =============================================
     vector<double> dop(static_cast<size_t>(N) * n * n, INF);
     vector<int>    dop_d(static_cast<size_t>(N) * n * n, -1);
     auto DOP   = [&](int mask, int v, int w) -> double& {
@@ -105,6 +119,8 @@ int main(int argc, char** argv) {
         return dop_d[(static_cast<size_t>(mask) * n + v) * n + w];
     };
     for (int mask = 1; mask < N; ++mask) {
+        int pc = __builtin_popcount(mask);
+        if (pc > OP_CAP) continue;    // 限制 |T| ≤ L+2
         for (int w = 0; w < n; ++w) {
             if (!(mask & (1 << w))) continue;
             for (int v = 0; v < n; ++v) {
@@ -132,27 +148,25 @@ int main(int argc, char** argv) {
             }
         }
     }
+    pass2_ms = pass_timer.ms();
+    pass_timer = Timer();
 
     // ============== Pass 3：A* 搜索 ==========================================
-    // α = drone_speed / truck_speed（与论文 §2 的 α 定义一致）
     const double alpha = inst.drone_speed / inst.truck_speed;
     const double h_factor = 1.0 / (2.0 + alpha);
 
-    // 启发函数：h(S, w) = MST({w} ∪ uncovered ∪ {depot}) / (2 + α)
     auto h_func = [&](int S, int w) -> double {
         int uncovered = FULL & ~S;
         int node_set = uncovered | (1 << w) | (1 << depot);
         return mst_cost(inst, node_set) * h_factor;
     };
 
-    // g[S*n + w] = 从源到 (S,w) 的已知最短代价
     vector<double> g(static_cast<size_t>(N) * n, INF);
     vector<char>   closed(static_cast<size_t>(N) * n, 0);
     vector<int>    parent_u(static_cast<size_t>(N) * n, -1);
     vector<int>    parent_T(static_cast<size_t>(N) * n, 0);
     auto idx = [&](int S, int w) { return static_cast<size_t>(S) * n + w; };
 
-    // 优先队列：(f, S, w)
     using Item = std::tuple<double, int, int>;
     std::priority_queue<Item, vector<Item>, std::greater<Item>> pq;
 
@@ -160,24 +174,31 @@ int main(int argc, char** argv) {
     g[idx(src_S, depot)] = 0;
     pq.emplace(h_func(src_S, depot), src_S, depot);
 
+    // ---- A* 统计 ----
+    long long expanded_states = 0;
+    long long generated_states = 1;   // 初始状态已加入
+    long long max_queue_size = 1;
+
     bool found = false;
     while (!pq.empty()) {
         auto [f_cur, S, w] = pq.top(); pq.pop();
         size_t id = idx(S, w);
         if (closed[id]) continue;
         closed[id] = 1;
+        expanded_states++;
 
-        if (S == FULL && w == depot) { found = true; break; }   // 到达汇点
+        if (S == FULL && w == depot) { found = true; break; }
 
-        // 扩展所有后继：从 (S, w) 通过一次 operation 转到 (S', w')
-        // 自由位 = 未覆盖客户（不含 depot，因为 depot 已在 S 中）
         int free_cust = FULL & ~S;
 
-        // ----- 后继 (a)：非末次 op，w' 是客户，T ⊆ free_cust 含 w' -----
-        // 枚举 T ⊆ free_cust（含空集），跳过空集
+        // ---- 后继 (a)：非末次 op，w' 是客户，T ⊆ free_cust 含 w' ---
         for (int T = free_cust; ; T = (T - 1) & free_cust) {
             if (T != 0) {
-                // 对 T 中每个位作为 w' 枚举
+                // 限制检查：|T| ≤ OP_CAP
+                if (__builtin_popcount(T) > OP_CAP) {
+                    if (T == 0) break;
+                    continue;
+                }
                 int Tb = T;
                 while (Tb) {
                     int w_bit = Tb & -Tb;
@@ -193,36 +214,48 @@ int main(int argc, char** argv) {
                         parent_u[id_new] = w;
                         parent_T[id_new] = T;
                         pq.emplace(g_new + h_func(S_new, w_new), S_new, w_new);
+                        generated_states++;
                     }
                 }
             }
             if (T == 0) break;
         }
 
-        // ----- 后继 (b)：末次 op，w' = depot，T = free_cust ∪ {depot} -----
+        // ---- 后继 (b)：末次 op，w' = depot，T = free_cust ∪ {depot} ----
         if (w != depot) {
             int T_final = free_cust | (1 << depot);
-            double op = DOP(T_final, w, depot);
-            if (op < INF) {
-                double g_new = g[id] + op;
-                size_t id_sink = idx(FULL, depot);
-                if (g_new < g[id_sink]) {
-                    g[id_sink] = g_new;
-                    parent_u[id_sink] = w;
-                    parent_T[id_sink] = T_final;
-                    pq.emplace(g_new + h_func(FULL, depot), FULL, depot);
+            int tf_pc = __builtin_popcount(T_final);
+            if (tf_pc > OP_CAP) {
+                // 限制下不允许，跳过
+            } else {
+                double op = DOP(T_final, w, depot);
+                if (op < INF) {
+                    double g_new = g[id] + op;
+                    size_t id_sink = idx(FULL, depot);
+                    if (g_new < g[id_sink]) {
+                        g[id_sink] = g_new;
+                        parent_u[id_sink] = w;
+                        parent_T[id_sink] = T_final;
+                        pq.emplace(g_new + h_func(FULL, depot), FULL, depot);
+                        generated_states++;
+                    }
                 }
             }
         }
-    }
 
-    // ============== 解恢复（同 dp-tspd） =====================================
+        // 更新队列最大长度
+        if ((long long)pq.size() > max_queue_size)
+            max_queue_size = (long long)pq.size();
+    }
+    pass3_ms = pass_timer.ms();
+
+    // ============== 解恢复 ===================================================
     Solution sol;
     sol.obj = found ? g[idx(FULL, depot)] : INF;
-    sol.status = found ? "OPTIMAL" : "INFEASIBLE";
+    sol.status = found ? (restricted ? "FEASIBLE" : "OPTIMAL") : "INFEASIBLE";
 
     if (found) {
-        vector<std::tuple<int, int, int>> ops_rev;          // (u, w, T)
+        vector<std::tuple<int, int, int>> ops_rev;
         int cur_S = FULL, cur_w = depot;
         while (cur_S != (1 << depot)) {
             int u = parent_u[idx(cur_S, cur_w)];
@@ -264,9 +297,28 @@ int main(int argc, char** argv) {
         }
     }
 
-    long long elapsed = timer.ms();
-    write_result(args.output, inst, "astar", -1, sol, elapsed);
-    std::printf("astar-tspd  instance=%s  n=%d  obj=%.4f  time_ms=%lld\n",
-                inst.name.c_str(), n, sol.obj, elapsed);
+    long long total_ms = total_timer.ms();
+    int L_out = restricted ? args.L : -1;
+    write_result(args.output, inst, "astar", L_out, sol, total_ms);
+
+    // ---- 附加 A* 搜索统计（写在结果文件末尾） ----
+    {
+        std::ofstream fout(args.output, std::ios::app);
+        fout << "\n[astar_stats]\n";
+        fout << "pass1_ms=" << pass1_ms << "\n";
+        fout << "pass2_ms=" << pass2_ms << "\n";
+        fout << "pass3_ms=" << pass3_ms << "\n";
+        fout << "expanded_states=" << expanded_states << "\n";
+        fout << "generated_states=" << generated_states << "\n";
+        fout << "max_queue_size=" << max_queue_size << "\n";
+        fout.close();
+    }
+
+    std::printf("astar-tspd  L=%s  instance=%s  n=%d  obj=%.4f  time_ms=%lld  "
+                "expanded=%lld  generated=%lld  P1=%lld P2=%lld P3=%lld\n",
+                restricted ? std::to_string(args.L).c_str() : "inf",
+                inst.name.c_str(), n, sol.obj, total_ms,
+                expanded_states, generated_states,
+                pass1_ms, pass2_ms, pass3_ms);
     return 0;
 }

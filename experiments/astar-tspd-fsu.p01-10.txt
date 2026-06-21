@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-fsu.p01-10  algo=astar  n=15  L=NA  obj=198.275  time_ms=2447  status=OPTIMAL
+instance=tspd-fsu.p01-10  algo=astar  n=15  L=NA  obj=198.275  time_ms=2549  status=OPTIMAL
 
 [solution]
 truck_route: 0 7 13 11 9 8 14 1 12 0
@@ -11,3 +11,11 @@ drone_sorties:
     launch=8  customer=4  rendezvous=1
     launch=1  customer=10  rendezvous=0
 total_cost: 198.275
+
+[astar_stats]
+pass1_ms=173
+pass2_ms=291
+pass3_ms=2084
+expanded_states=112742
+generated_states=768856
+max_queue_size=702307

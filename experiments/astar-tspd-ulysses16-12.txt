@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-ulysses16-12  algo=astar  n=16  L=NA  obj=37.2827  time_ms=7326  status=OPTIMAL
+instance=tspd-ulysses16-12  algo=astar  n=16  L=NA  obj=37.2827  time_ms=7062  status=OPTIMAL
 
 [solution]
 truck_route: 0 13 12 11 6 5 9 15 2 1 3 7 0
@@ -9,3 +9,11 @@ drone_sorties:
     launch=5  customer=8  rendezvous=9
     launch=9  customer=10  rendezvous=0
 total_cost: 37.2827
+
+[astar_stats]
+pass1_ms=398
+pass2_ms=681
+pass3_ms=5983
+expanded_states=217310
+generated_states=1438162
+max_queue_size=1245928

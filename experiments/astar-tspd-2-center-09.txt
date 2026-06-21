@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-2-center-09  algo=astar  n=12  L=NA  obj=137.837  time_ms=90  status=OPTIMAL
+instance=tspd-2-center-09  algo=astar  n=12  L=NA  obj=137.837  time_ms=92  status=OPTIMAL
 
 [solution]
 truck_route: 0 1 5 8 2 3 0
@@ -11,3 +11,11 @@ drone_sorties:
     launch=2  customer=11  rendezvous=3
     launch=3  customer=6  rendezvous=0
 total_cost: 137.837
+
+[astar_stats]
+pass1_ms=13
+pass2_ms=22
+pass3_ms=56
+expanded_states=11266
+generated_states=40034
+max_queue_size=33914

@@ -142,9 +142,9 @@ def run_one(algo: str, instance: Path, L: Optional[int], timeout: int) -> Dict[s
         raise FileNotFoundError(f"找不到可执行文件：{exe}")
 
     stem = instance.stem
-    if algo == "rdp":
-        assert L is not None
-        out = EXP / f"rdp-{stem}-L{L}.txt"
+    if L is not None:
+        # rdp 或 astar 带 L 参数
+        out = EXP / f"{algo}-{stem}-L{L}.txt"
         cmd = [str(exe), "--input", str(instance), "--output", str(out), "--L", str(L)]
     else:
         out = EXP / f"{algo}-{stem}.txt"
@@ -305,6 +305,8 @@ def main() -> None:
                 rows.append(run_one("rdp", inst, L=L, timeout=args.timeout))
         if "astar" in args.algos:
             rows.append(run_one("astar", inst, L=None, timeout=args.timeout))
+            for L in args.Ls:
+                rows.append(run_one("astar", inst, L=L, timeout=args.timeout))
 
     write_csv(rows)
     make_plots(rows)

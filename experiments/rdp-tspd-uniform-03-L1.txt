@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-uniform-03  algo=rdp  n=12  L=1  obj=204.326  time_ms=20  status=FEASIBLE
+instance=tspd-uniform-03  algo=rdp  n=12  L=1  obj=204.326  time_ms=23  status=FEASIBLE
 
 [solution]
 truck_route: 0 5 2 1 4 6 10 0

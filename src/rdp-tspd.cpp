@@ -112,7 +112,10 @@ int main(int argc, char** argv) {
     for (int pc = 2; pc <= n; ++pc) {
         for (int S : masks_by_pc[pc]) {
             if (!(S & (1 << depot))) continue;
-            for (int w = 0; w < n; ++w) {
+	      std::vector<int> ws;
+	      for (int w = 0; w < n; ++w) if (S & (1 << w)) ws.push_back(w);
+	      if (S == ((1 << n) - 1)) { auto it = std::find(ws.begin(), ws.end(), depot); if (it != ws.end()) { ws.erase(it); ws.push_back(depot); } }
+	      for (int w : ws) {
                 if (!(S & (1 << w))) continue;
                 if (w == depot && S != ((1 << n) - 1)) continue;
                 int T_base = S ^ (1 << w);

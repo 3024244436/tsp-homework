@@ -1,0 +1,20 @@
+[summary]
+instance=tspd-burma14-11  algo=astar  n=14  L=2  obj=16.7863  time_ms=385  status=FEASIBLE
+
+[solution]
+truck_route: 0 7 13 11 5 6 12 10 8 0
+drone_sorties:
+    launch=0  customer=1  rendezvous=7
+    launch=7  customer=2  rendezvous=13
+    launch=13  customer=3  rendezvous=5
+    launch=5  customer=4  rendezvous=10
+    launch=10  customer=9  rendezvous=0
+total_cost: 16.7863
+
+[astar_stats]
+pass1_ms=9
+pass2_ms=21
+pass3_ms=354
+expanded_states=47174
+generated_states=214953
+max_queue_size=190738

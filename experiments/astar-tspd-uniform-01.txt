@@ -9,3 +9,11 @@ drone_sorties:
     launch=4  customer=2  rendezvous=6
     launch=6  customer=3  rendezvous=0
 total_cost: 225.181
+
+[astar_stats]
+pass1_ms=0
+pass2_ms=0
+pass3_ms=1
+expanded_states=446
+generated_states=1040
+max_queue_size=929

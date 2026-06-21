@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-burma14-11  algo=astar  n=14  L=NA  obj=16.7863  time_ms=725  status=OPTIMAL
+instance=tspd-burma14-11  algo=astar  n=14  L=NA  obj=16.7863  time_ms=766  status=OPTIMAL
 
 [solution]
 truck_route: 0 7 13 11 5 6 12 10 8 0
@@ -10,3 +10,11 @@ drone_sorties:
     launch=5  customer=4  rendezvous=10
     launch=10  customer=9  rendezvous=0
 total_cost: 16.7863
+
+[astar_stats]
+pass1_ms=75
+pass2_ms=124
+pass3_ms=567
+expanded_states=47220
+generated_states=310927
+max_queue_size=287693

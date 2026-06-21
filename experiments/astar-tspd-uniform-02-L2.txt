@@ -1,0 +1,19 @@
+[summary]
+instance=tspd-uniform-02  algo=astar  n=10  L=2  obj=178.18  time_ms=8  status=FEASIBLE
+
+[solution]
+truck_route: 0 9 7 3 1 2 0
+drone_sorties:
+    launch=0  customer=5  rendezvous=9
+    launch=9  customer=6  rendezvous=3
+    launch=3  customer=4  rendezvous=1
+    launch=1  customer=8  rendezvous=0
+total_cost: 178.18
+
+[astar_stats]
+pass1_ms=0
+pass2_ms=1
+pass3_ms=6
+expanded_states=2229
+generated_states=6068
+max_queue_size=5313

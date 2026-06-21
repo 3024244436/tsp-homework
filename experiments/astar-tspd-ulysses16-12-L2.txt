@@ -1,0 +1,20 @@
+[summary]
+instance=tspd-ulysses16-12  algo=astar  n=16  L=2  obj=39.1543  time_ms=3328  status=FEASIBLE
+
+[solution]
+truck_route: 0 15 12 13 14 5 6 9 2 1 7 0
+drone_sorties:
+    launch=0  customer=3  rendezvous=12
+    launch=12  customer=11  rendezvous=13
+    launch=13  customer=4  rendezvous=5
+    launch=5  customer=8  rendezvous=9
+    launch=9  customer=10  rendezvous=7
+total_cost: 39.1543
+
+[astar_stats]
+pass1_ms=48
+pass2_ms=87
+pass3_ms=3192
+expanded_states=226677
+generated_states=1132759
+max_queue_size=920286

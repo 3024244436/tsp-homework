@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-uniform-02  algo=dp  n=10  L=NA  obj=178.18  time_ms=7  status=OPTIMAL
+instance=tspd-uniform-02  algo=dp  n=10  L=NA  obj=178.18  time_ms=8  status=OPTIMAL
 
 [solution]
 truck_route: 0 9 7 3 1 2 0

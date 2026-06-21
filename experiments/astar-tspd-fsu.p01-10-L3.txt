@@ -1,0 +1,21 @@
+[summary]
+instance=tspd-fsu.p01-10  algo=astar  n=15  L=3  obj=198.275  time_ms=1604  status=FEASIBLE
+
+[solution]
+truck_route: 0 7 13 11 9 8 14 1 12 0
+drone_sorties:
+    launch=0  customer=3  rendezvous=7
+    launch=7  customer=5  rendezvous=13
+    launch=13  customer=2  rendezvous=9
+    launch=9  customer=6  rendezvous=8
+    launch=8  customer=4  rendezvous=1
+    launch=1  customer=10  rendezvous=0
+total_cost: 198.275
+
+[astar_stats]
+pass1_ms=25
+pass2_ms=63
+pass3_ms=1515
+expanded_states=112742
+generated_states=607656
+max_queue_size=541388

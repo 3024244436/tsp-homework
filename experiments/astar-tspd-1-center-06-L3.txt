@@ -1,0 +1,20 @@
+[summary]
+instance=tspd-1-center-06  algo=astar  n=12  L=3  obj=124.478  time_ms=64  status=FEASIBLE
+
+[solution]
+truck_route: 0 3 7 5 4 8 11 0
+drone_sorties:
+    launch=0  customer=1  rendezvous=3
+    launch=3  customer=6  rendezvous=7
+    launch=7  customer=9  rendezvous=4
+    launch=4  customer=10  rendezvous=11
+    launch=11  customer=2  rendezvous=0
+total_cost: 124.478
+
+[astar_stats]
+pass1_ms=3
+pass2_ms=10
+pass3_ms=50
+expanded_states=11266
+generated_states=35591
+max_queue_size=30830
