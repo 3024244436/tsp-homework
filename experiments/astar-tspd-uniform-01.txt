@@ -1,0 +1,11 @@
+[summary]
+instance=tspd-uniform-01  algo=astar  n=8  L=NA  obj=225.181  time_ms=1  status=OPTIMAL
+
+[solution]
+truck_route: 0 7 4 6 0
+drone_sorties:
+    launch=0  customer=5  rendezvous=7
+    launch=7  customer=1  rendezvous=4
+    launch=4  customer=2  rendezvous=6
+    launch=6  customer=3  rendezvous=0
+total_cost: 225.181

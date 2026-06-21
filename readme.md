@@ -23,6 +23,11 @@ src/rdp-tspd.cpp       编译为 src/rdp-tspd.exe
     L 足够大时退化为精确 DP；L 较小时更快但可能次优
     调用：rdp-tspd.exe --input <data.txt> --output <result.txt> --L <int>
 
+src/astar-tspd.cpp      编译为 src/astar-tspd.exe
+    功能：A* 启发式搜索 —— 实现论文 §3.4.2，在状态图上利用 MST 下界引导搜索
+    保证找到精确最优解，大 n 时分支剪枝可能比 DP 更快
+    调用：astar-tspd.exe --input <data.txt> --output <result.txt>
+
 # 数据文件说明
 
 文件名格式：tspd-<分布>-<两位序号>.txt
@@ -37,16 +42,25 @@ src/rdp-tspd.cpp       编译为 src/rdp-tspd.exe
     1  x1  y1                  其他为客户
     ...
 
-生成器：
-    python data/gen_instances.py                           生成默认 9 个实例
-    python data/gen_instances.py --n 14 --kind uniform --seed 42 --out data/tspd-uniform-99.txt
+## 数据来源
+
+| 来源 | 文件 | 类型 |
+|------|------|------|
+| TSPLIB 标准库 | burma14.tsp (n=14), ulysses16.tsp (n=16) | 原始 .tsp GEO 坐标 |
+| FSU 测试集 | tsp-FSU.p01-*.txt (n=15) | 原始坐标/矩阵 |
+| 自动生成 | gen_instances.py → 9 个 tspd-*.txt | 三种分布 × 三种规模 |
+
+## 转换脚本
+
+    python data/tsplib_convert.py burma14.tsp --out tspd-burma14-11.txt  # TSPLIB → TSP-D
+    python data/tsplib_convert.py ulysses16.tsp --out tspd-ulysses16-12.txt
+    python data/fsu_convert.py                                              # FSU → TSP-D
+    python data/gen_instances.py                                            # 生成默认 9 个实例
 
 # 结果文件说明
 
 文件名格式：<算法>-<实例名>-<参数>.txt
 位置：experiments/
-    例：dp-tspd-uniform-01-inf.txt    （精确 DP，参数 L=∞）
-        rdp-tspd-uniform-01-2.txt     （限制型 DP，L=2）
 
 格式（两块）：
 
@@ -57,78 +71,83 @@ src/rdp-tspd.cpp       编译为 src/rdp-tspd.exe
     truck_route: 0 6 4 7 0
     drone_sorties:
         launch=0  customer=3  rendezvous=6
-        launch=6  customer=2  rendezvous=4
         ...
     total_cost: 225.18
 
 汇总：
     python experiments/run_experiments.py    # 批量跑、生成 results.csv 与 plots/
 
+# 实验最新结果（2026-06-21）
+
+共 **72 组实验**：DP / RDP(L=1,2,3,4) / A* × 12 实例（n=8~16）
+
+## 核心发现
+
+| 结论 | 数据 |
+|------|------|
+| RDP k=1 比 DP 快 | n=16: 8.6× (1.3s vs 11.3s) |
+| RDP 解质量 | k=4 最大误差仅 1.2% (ulysses16) |
+| FSU n=15 | **k=1 即达最优**（5.7× 加速，零误差） |
+| A* vs DP 交叉 | n=16 时 A* (7.0s) 首次比 DP (11.3s) 快 |
+| 分布鲁棒性 | 1-center 全部 k=1 即最优 |
+
+详细分析见 `reports/实验结果分析.md`。
+
 # 目录结构
 
-3024244436-4-1/
+3024244436-4-2/
 ├── src/
 │   ├── header.h
-│   ├── dp-tspd.cpp     dp-tspd.exe       精确 DP
-│   └── rdp-tspd.cpp    rdp-tspd.exe      限制型 DP
+│   ├── dp-tspd.cpp     dp-tspd.exe        精确 DP
+│   ├── rdp-tspd.cpp    rdp-tspd.exe      限制型 DP
+│   └── astar-tspd.cpp  astar-tspd.exe    A* 搜索
 ├── data/
-│   ├── gen_instances.py
-│   └── tspd-<分布>-<序号>.txt × 9        三种分布 × 三种规模
+│   ├── gen_instances.py / tsplib_convert.py / fsu_convert.py
+│   ├── burma14.tsp / ulysses16.tsp        TSPLIB 原始
+│   ├── tsp-FSU.p01-*.txt                 FSU 原始
+│   └── tspd-*.txt × 12                   TSP-D 实例
 ├── experiments/
 │   ├── run_experiments.py                批量实验脚本
-│   ├── results.csv                       汇总
-│   ├── plots/                            画图
+│   ├── results.csv                       72 组汇总
+│   ├── plots/time_by_n.png              时间对比图
+│   ├── plots/gap_by_L.png               误差率 vs L 图
 │   └── <算法>-<实例>-<参数>.txt          单次结果
 ├── reports/
-│   ├── draft/                            中间稿（翻译、伪代码）
-│   ├── 实验报告.docx / report.docx
-│   ├── 讲解PPT.pptx / report.ppt
-│   └── report.mp4                        5-10 分钟讲解视频
+│   ├── draft/                            论文翻译、参考文献
+│   ├── 实验结果分析.md                    完整分析报告
+│   ├── 实验报告.docx
+│   └── 完整汇报PPT_TSPD动态规划实验.pptx
 ├── readme.md
-├── member.txt
-└── build.bat                             一键编译
+└── .gitignore
 
 # 批量实验脚本使用说明
 
-本项目已补充 `experiments/run_experiments.py`，用于完成第 3 周实验数据整理工作。
-
-默认运行：
+默认运行（DP + RDP）：
 
 ```bash
 python experiments/run_experiments.py
 ```
 
-默认会执行以下流程：
-
-1. 如果 `data/` 中缺少默认实例，则调用 `data/gen_instances.py` 生成 9 个实例；
-2. 编译 `dp-tspd.cpp` 和 `rdp-tspd.cpp`；
-3. 对每个实例运行精确 DP；
-4. 对每个实例运行限制型 DP，默认测试 `L=1,2,3,4`；
-5. 汇总结果到 `experiments/results.csv`；
-6. 如果安装了 `matplotlib`，自动生成：
-   - `experiments/plots/time_by_n.png`
-   - `experiments/plots/gap_by_L.png`
-
-如果想把 A* 也加入对比，可以运行：
+三方完整对比（DP + RDP + A*）：
 
 ```bash
 python experiments/run_experiments.py --algos dp rdp astar
 ```
 
-如果想修改限制型 DP 的 L 参数，可以运行：
-
-```bash
-python experiments/run_experiments.py --Ls 1 2 3 4 5
-```
-
-如果想把 `data/tspd-fsu.p01-10.txt` 也加入实验，可以运行：
+加入 FSU 数据：
 
 ```bash
 python experiments/run_experiments.py --include-fsu
 ```
 
-如果已经用 `build.bat` 编译过，不想重新编译，可以运行：
+跳过编译（已完成编译时）：
 
 ```bash
 python experiments/run_experiments.py --no-compile
+```
+
+自定义 L 参数：
+
+```bash
+python experiments/run_experiments.py --Ls 1 2 3 4 5
 ```

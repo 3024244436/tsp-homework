@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-1-center-05  algo=dp  n=10  L=NA  obj=191.376  time_ms=8  status=OPTIMAL
+instance=tspd-1-center-05  algo=astar  n=10  L=NA  obj=191.376  time_ms=12  status=OPTIMAL
 
 [solution]
 truck_route: 0 7 5 1 4 0

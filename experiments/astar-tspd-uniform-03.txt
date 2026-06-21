@@ -1,10 +1,10 @@
 [summary]
-instance=tspd-uniform-03  algo=rdp  n=12  L=3  obj=202.438  time_ms=41  status=FEASIBLE
+instance=tspd-uniform-03  algo=astar  n=12  L=NA  obj=202.438  time_ms=100  status=OPTIMAL
 
 [solution]
 truck_route: 0 10 6 9 4 1 11 3 5 0
 drone_sorties:
-    launch=10  customer=7  rendezvous=1
+    launch=0  customer=7  rendezvous=1
     launch=1  customer=2  rendezvous=11
     launch=11  customer=8  rendezvous=0
 total_cost: 202.438

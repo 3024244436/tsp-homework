@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-ulysses16-12  algo=rdp  n=16  L=2  obj=39.1543  time_ms=2356  status=FEASIBLE
+instance=tspd-ulysses16-12  algo=rdp  n=16  L=2  obj=39.1543  time_ms=2480  status=FEASIBLE
 
 [solution]
 truck_route: 0 7 1 2 9 6 5 14 13 12 15 0

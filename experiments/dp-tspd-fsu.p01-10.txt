@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-fsu.p01-10  algo=dp  n=15  L=NA  obj=198.275  time_ms=2378  status=OPTIMAL
+instance=tspd-fsu.p01-10  algo=dp  n=15  L=NA  obj=198.275  time_ms=2374  status=OPTIMAL
 
 [solution]
 truck_route: 0 7 13 11 9 8 14 1 12 0

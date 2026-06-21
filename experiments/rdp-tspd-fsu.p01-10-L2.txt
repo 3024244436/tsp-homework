@@ -1,5 +1,5 @@
 [summary]
-instance=tspd-fsu.p01-10  algo=rdp  n=15  L=2  obj=198.275  time_ms=646  status=FEASIBLE
+instance=tspd-fsu.p01-10  algo=rdp  n=15  L=2  obj=198.275  time_ms=675  status=FEASIBLE
 
 [solution]
 truck_route: 0 7 13 11 9 8 14 1 12 0
